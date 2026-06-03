@@ -1,9 +1,11 @@
+from typing import Any, Dict, List
+
 import psycopg2
 from psycopg2 import sql
-from typing import List, Dict, Any
-from config import DB_CONFIG, COUNTRIES
-from src.api_clients import AeroplanesAPI
+
+from config import COUNTRIES, DB_CONFIG
 from src.aircraft import Aircraft
+from src.api_clients import AeroplanesAPI
 
 
 class DatabaseSetup:
@@ -30,26 +32,19 @@ class DatabaseSetup:
         try:
             # Подключаемся к postgres для создания БД
             conn = psycopg2.connect(
-                host=DB_CONFIG['host'],
-                port=DB_CONFIG['port'],
-                user=DB_CONFIG['user'],
-                password=DB_CONFIG['password'],
-                database='postgres'
+                host=DB_CONFIG["host"],
+                port=DB_CONFIG["port"],
+                user=DB_CONFIG["user"],
+                password=DB_CONFIG["password"],
+                database="postgres",
             )
             conn.autocommit = True
             cursor = conn.cursor()
 
             # Проверяем существование БД
-            cursor.execute(
-                "SELECT 1 FROM pg_catalog.pg_database WHERE datname = %s",
-                (DB_CONFIG['database'],)
-            )
+            cursor.execute("SELECT 1 FROM pg_catalog.pg_database WHERE datname = %s", (DB_CONFIG["database"],))
             if not cursor.fetchone():
-                cursor.execute(
-                    sql.SQL("CREATE DATABASE {}").format(
-                        sql.Identifier(DB_CONFIG['database'])
-                    )
-                )
+                cursor.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(DB_CONFIG["database"])))
                 print(f"База данных '{DB_CONFIG['database']}' создана")
 
             cursor.close()
@@ -62,7 +57,7 @@ class DatabaseSetup:
         self.connect()
 
         # Читаем SQL скрипт
-        with open('sql/create_tables.sql', 'r', encoding='utf-8') as f:
+        with open("sql/create_tables.sql", "r", encoding="utf-8") as f:
             sql_script = f.read()
 
         self.cursor.execute(sql_script)
@@ -89,8 +84,7 @@ class DatabaseSetup:
                            north_lat = EXCLUDED.north_lat,
                            west_lon = EXCLUDED.west_lon,
                            east_lon = EXCLUDED.east_lon""",
-                    (country, data['south'], data['north'],
-                     data['west'], data['east'])
+                    (country, data["south"], data["north"], data["west"], data["east"]),
                 )
                 print(f"  Координаты сохранены")
             else:
@@ -123,10 +117,16 @@ class DatabaseSetup:
                            (callsign, origin_country, velocity, baro_altitude, 
                             country_id, icao24, on_ground, last_contact)
                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-                        (aircraft.callsign, aircraft.origin_country,
-                         aircraft.velocity, aircraft.baro_altitude,
-                         country_id, aircraft.icao24,
-                         aircraft.on_ground, aircraft.last_contact)
+                        (
+                            aircraft.callsign,
+                            aircraft.origin_country,
+                            aircraft.velocity,
+                            aircraft.baro_altitude,
+                            country_id,
+                            aircraft.icao24,
+                            aircraft.on_ground,
+                            aircraft.last_contact,
+                        ),
                     )
 
                 print(f"  Добавлено самолетов: {len(aircraft_list)}")

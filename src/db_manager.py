@@ -1,5 +1,7 @@
-import psycopg2
 from typing import List, Tuple
+
+import psycopg2
+
 from config import DB_CONFIG
 
 
@@ -45,7 +47,6 @@ class DBManager:
     def get_all_aeroplanes(self) -> List[Tuple]:
         """Получает список всех воздушных судов."""
 
-
         self.connect()
         self.cursor.execute("""
             SELECT a.id, a.callsign, a.origin_country, 
@@ -62,7 +63,6 @@ class DBManager:
     def get_avg_speed(self) -> float:
         """Получает среднюю скорость по всем самолетам."""
 
-
         self.connect()
         self.cursor.execute("""
             SELECT AVG(velocity) 
@@ -76,11 +76,11 @@ class DBManager:
     def get_aeroplanes_with_higher_speed(self) -> List[Tuple]:
         """Получает список всех самолетов, у которых скорость выше средней."""
 
-
         avg_speed = self.get_avg_speed()
 
         self.connect()
-        self.cursor.execute("""
+        self.cursor.execute(
+            """
             SELECT a.id, a.callsign, a.origin_country, 
                    a.velocity, a.baro_altitude, a.icao24,
                    c.name as country_name
@@ -88,7 +88,9 @@ class DBManager:
             JOIN countries c ON a.country_id = c.id
             WHERE a.velocity > %s AND a.velocity > 0
             ORDER BY a.velocity DESC
-        """, (avg_speed,))
+        """,
+            (avg_speed,),
+        )
         result = self.cursor.fetchall()
         self.disconnect()
         return result
@@ -97,9 +99,9 @@ class DBManager:
         """Получает список всех самолетов, в позывном которых
         содержатся переданные символы."""
 
-
         self.connect()
-        self.cursor.execute("""
+        self.cursor.execute(
+            """
             SELECT a.id, a.callsign, a.origin_country, 
                    a.velocity, a.baro_altitude, a.icao24,
                    c.name as country_name
@@ -107,7 +109,9 @@ class DBManager:
             JOIN countries c ON a.country_id = c.id
             WHERE UPPER(a.callsign) LIKE UPPER(%s)
             ORDER BY a.callsign
-        """, (f'%{keyword}%',))
+        """,
+            (f"%{keyword}%",),
+        )
         result = self.cursor.fetchall()
         self.disconnect()
         return result
@@ -131,12 +135,13 @@ class DBManager:
         print("\n" + "=" * 80)
         print("ВСЕ ВОЗДУШНЫЕ СУДА")
         print("=" * 80)
-        print(f"{'№':4s} {'Позывной':12s} {'Страна рег.':20s} "
-              f"{'Скорость':10s} {'Высота':10s} {'Над страной':15s}")
+        print(f"{'№':4s} {'Позывной':12s} {'Страна рег.':20s} " f"{'Скорость':10s} {'Высота':10s} {'Над страной':15s}")
         print("-" * 75)
         for i, row in enumerate(data[:30], 1):
-            print(f"{i:<4d} {row[1]:12s} {row[2] or 'N/A':20s} "
-                  f"{row[3] or 0:>8.1f}  {row[4] or 0:>8.1f}  {row[7]:15s}")
+            print(
+                f"{i:<4d} {row[1]:12s} {row[2] or 'N/A':20s} "
+                f"{row[3] or 0:>8.1f}  {row[4] or 0:>8.1f}  {row[7]:15s}"
+            )
         if len(data) > 30:
             print(f"... и еще {len(data) - 30} самолетов")
 

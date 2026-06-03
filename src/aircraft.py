@@ -1,16 +1,21 @@
-from typing import List, Dict, Any, Optional
 from functools import total_ordering
+from typing import Any, Dict, List, Optional
 
 
 @total_ordering
 class Aircraft:
-    """ Класс, представляющий информацию о самолете."""
+    """Класс, представляющий информацию о самолете."""
 
-    def __init__(self, callsign: str, origin_country: str,
-                 velocity: float, baro_altitude: float,
-                 icao24: str = "", on_ground: bool = False,
-                 last_contact: int = 0) -> None:
-
+    def __init__(
+        self,
+        callsign: str,
+        origin_country: str,
+        velocity: float,
+        baro_altitude: float,
+        icao24: str = "",
+        on_ground: bool = False,
+        last_contact: int = 0,
+    ) -> None:
         """Конструктор класса"""
         self._callsign = self._validate_callsign(callsign)
         self._origin_country = self._validate_country(origin_country)
@@ -83,8 +88,7 @@ class Aircraft:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Aircraft):
             return NotImplemented
-        return (abs(self._velocity - other._velocity) < 0.01 and
-                abs(self._baro_altitude - other._baro_altitude) < 0.01)
+        return abs(self._velocity - other._velocity) < 0.01 and abs(self._baro_altitude - other._baro_altitude) < 0.01
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Aircraft):
@@ -96,30 +100,30 @@ class Aircraft:
     def to_dict(self) -> Dict[str, Any]:
         """Преобразование в словарь"""
         return {
-            'callsign': self._callsign,
-            'origin_country': self._origin_country,
-            'velocity': self._velocity,
-            'baro_altitude': self._baro_altitude,
-            'icao24': self._icao24,
-            'on_ground': self._on_ground,
-            'last_contact': self._last_contact,
+            "callsign": self._callsign,
+            "origin_country": self._origin_country,
+            "velocity": self._velocity,
+            "baro_altitude": self._baro_altitude,
+            "icao24": self._icao24,
+            "on_ground": self._on_ground,
+            "last_contact": self._last_contact,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Aircraft':
+    def from_dict(cls, data: Dict[str, Any]) -> "Aircraft":
         """Создание из словаря"""
         return cls(
-            callsign=data['callsign'],
-            origin_country=data.get('origin_country', 'Unknown'),
-            velocity=data['velocity'],
-            baro_altitude=data['baro_altitude'],
-            icao24=data.get('icao24', ''),
-            on_ground=data.get('on_ground', False),
-            last_contact=data.get('last_contact', 0),
+            callsign=data["callsign"],
+            origin_country=data.get("origin_country", "Unknown"),
+            velocity=data["velocity"],
+            baro_altitude=data["baro_altitude"],
+            icao24=data.get("icao24", ""),
+            on_ground=data.get("on_ground", False),
+            last_contact=data.get("last_contact", 0),
         )
 
     @classmethod
-    def from_api_response(cls, state: List[Any]) -> 'Aircraft':
+    def from_api_response(cls, state: List[Any]) -> "Aircraft":
         """Создание объекта из ответа OpenSky API"""
         callsign = state[1].strip() if state[1] else "UNKNOWN"
         origin_country = state[2] if state[2] else "Unknown"
@@ -140,9 +144,9 @@ class Aircraft:
         )
 
     @classmethod
-    def cast_to_object_list(cls, states: List[List[Any]]) -> List['Aircraft']:
+    def cast_to_object_list(cls, states: List[List[Any]]) -> List["Aircraft"]:
         """Преобразование данных API в список объектов Aircraft"""
-        aircraft_list: List['Aircraft'] = []
+        aircraft_list: List["Aircraft"] = []
         if states:
             for state in states:
                 try:
@@ -153,10 +157,14 @@ class Aircraft:
         return aircraft_list
 
     def __str__(self) -> str:
-        return (f"Самолет {self._callsign} ({self._origin_country}): "
-                f"скорость {self._velocity} м/с, высота {self._baro_altitude} м")
+        return (
+            f"Самолет {self._callsign} ({self._origin_country}): "
+            f"скорость {self._velocity} м/с, высота {self._baro_altitude} м"
+        )
 
     def __repr__(self) -> str:
-        return (f"Aircraft(callsign='{self._callsign}', "
-                f"country='{self._origin_country}', "
-                f"velocity={self._velocity}, altitude={self._baro_altitude})")
+        return (
+            f"Aircraft(callsign='{self._callsign}', "
+            f"country='{self._origin_country}', "
+            f"velocity={self._velocity}, altitude={self._baro_altitude})"
+        )
