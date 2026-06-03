@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import List
 
 import psycopg2
 from psycopg2 import sql
@@ -86,7 +86,7 @@ class DatabaseSetup:
                            east_lon = EXCLUDED.east_lon""",
                     (country, data["south"], data["north"], data["west"], data["east"]),
                 )
-                print(f"  Координаты сохранены")
+                print("Координаты сохранены")
             else:
                 print(f"  Страна '{country}' не найдена")
 
@@ -113,8 +113,8 @@ class DatabaseSetup:
 
                 for aircraft in aircraft_list:
                     self.cursor.execute(
-                        """INSERT INTO aircraft 
-                           (callsign, origin_country, velocity, baro_altitude, 
+                        """INSERT INTO aircraft
+                           (callsign, origin_country, velocity, baro_altitude,
                             country_id, icao24, on_ground, last_contact)
                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
                         (

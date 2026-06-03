@@ -1,16 +1,16 @@
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
-import psycopg2
+import psycopg2  # type: ignore[import-untyped]
 
 from config import DB_CONFIG
 
 
 class DBManager:
-    """Класс для работы с данными в PostgresSQL"""
+    """Класс для работы с данными в PostgreSQL"""
 
-    def __init__(self):
-        self.conn = None
-        self.cursor = None
+    def __init__(self) -> None:
+        self.conn: Any = None
+        self.cursor: Any = None
 
     def connect(self) -> None:
         """Подключение к базе данных"""
@@ -40,48 +40,60 @@ class DBManager:
             GROUP BY c.name
             ORDER BY aircraft_count DESC
         """)
-        result = self.cursor.fetchall()
+        result: List[Tuple[str, int]] = self.cursor.fetchall()
         self.disconnect()
         return result
 
-    def get_all_aeroplanes(self) -> List[Tuple]:
-        """Получает список всех воздушных судов."""
+    def get_all_aeroplanes(self) -> List[Tuple[Any, ...]]:
+        """
+        Получает список всех воздушных судов.
 
+        Returns:
+            Список кортежей с данными о самолетах
+        """
         self.connect()
         self.cursor.execute("""
-            SELECT a.id, a.callsign, a.origin_country, 
+            SELECT a.id, a.callsign, a.origin_country,
                    a.velocity, a.baro_altitude, a.icao24,
                    a.on_ground, c.name as country_name
             FROM aircraft a
             JOIN countries c ON a.country_id = c.id
             ORDER BY a.callsign
         """)
-        result = self.cursor.fetchall()
+        result: List[Tuple[Any, ...]] = self.cursor.fetchall()
         self.disconnect()
         return result
 
     def get_avg_speed(self) -> float:
-        """Получает среднюю скорость по всем самолетам."""
+        """
+        Получает среднюю скорость по всем самолетам.
 
+        Returns:
+            Средняя скорость
+        """
         self.connect()
         self.cursor.execute("""
-            SELECT AVG(velocity) 
-            FROM aircraft 
+            SELECT AVG(velocity)
+            FROM aircraft
             WHERE velocity > 0
         """)
-        result = self.cursor.fetchone()
+        result: Tuple[Any, ...] = self.cursor.fetchone()
         self.disconnect()
         return float(result[0]) if result and result[0] else 0.0
 
-    def get_aeroplanes_with_higher_speed(self) -> List[Tuple]:
-        """Получает список всех самолетов, у которых скорость выше средней."""
+    def get_aeroplanes_with_higher_speed(self) -> List[Tuple[Any, ...]]:
+        """
+        Получает список всех самолетов, у которых скорость выше средней.
 
+        Returns:
+            Список кортежей с данными о самолетах
+        """
         avg_speed = self.get_avg_speed()
 
         self.connect()
         self.cursor.execute(
             """
-            SELECT a.id, a.callsign, a.origin_country, 
+            SELECT a.id, a.callsign, a.origin_country,
                    a.velocity, a.baro_altitude, a.icao24,
                    c.name as country_name
             FROM aircraft a
@@ -91,18 +103,18 @@ class DBManager:
         """,
             (avg_speed,),
         )
-        result = self.cursor.fetchall()
+        result: List[Tuple[Any, ...]] = self.cursor.fetchall()
         self.disconnect()
         return result
 
-    def get_aeroplanes_with_keyword(self, keyword: str) -> List[Tuple]:
+    def get_aeroplanes_with_keyword(self, keyword: str) -> List[Tuple[Any, ...]]:
         """Получает список всех самолетов, в позывном которых
         содержатся переданные символы."""
 
         self.connect()
         self.cursor.execute(
             """
-            SELECT a.id, a.callsign, a.origin_country, 
+            SELECT a.id, a.callsign, a.origin_country,
                    a.velocity, a.baro_altitude, a.icao24,
                    c.name as country_name
             FROM aircraft a
@@ -112,7 +124,7 @@ class DBManager:
         """,
             (f"%{keyword}%",),
         )
-        result = self.cursor.fetchall()
+        result: List[Tuple[Any, ...]] = self.cursor.fetchall()
         self.disconnect()
         return result
 
@@ -127,7 +139,6 @@ class DBManager:
         for country, count in data:
             print(f"{country:25s} {count:>10d}")
         print("-" * 40)
-        print(f"{'ВСЕГО:':25s} {sum(c for _, c in data):>10d}")
 
     def print_all_aeroplanes(self) -> None:
         """Вывод всех самолетов"""
